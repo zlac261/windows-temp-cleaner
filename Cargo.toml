@@ -9,3 +9,10 @@ description = "A very simple app that cleans all temp files on Windows"
 
 [dependencies]
 eframe = "0.28.0"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
+
+[package.metadata.winres]
+OriginalFilename = "windows-temp-cleaner.exe"
+LegalCopyright = "Copright © 2024"
