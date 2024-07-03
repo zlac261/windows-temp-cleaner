@@ -1,0 +1,11 @@
+[package]
+name = "windows-temp-cleaner"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jonathan Al-Hachache <zlac261@live.rhul.ac.uk>",
+    "Omar Abou Hussein <omar.alaa12330@gmail.com>"
+]
+description = "A very simple app that cleans all temp files on Windows"
+
+[dependencies]
+eframe = "0.28.0"
