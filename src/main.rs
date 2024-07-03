@@ -1,6 +1,7 @@
 mod app;
 mod file_operations;
 
+
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
     eframe::run_native(
