@@ -1,8 +1,9 @@
 use std::fs;
 use std::path::Path;
 use std::env;
+use crate::log_display::FailedDeletionFile;
 
-pub fn clear_temp_files() -> (usize, u64, Vec<String>) {
+pub fn clear_temp_files() -> (usize, u64, Vec<FailedDeletionFile>) {
     let mut files_deleted = 0;
     let mut bytes_freed = 0;
     let mut failed_deletions = Vec::new();
@@ -19,7 +20,7 @@ pub fn clear_temp_files() -> (usize, u64, Vec<String>) {
     (files_deleted, bytes_freed, failed_deletions)
 }
 
-fn delete_files_in_directory(dir: &Path, files_deleted: &mut usize, bytes_freed: &mut u64, failed_deletions: &mut Vec<String>) {
+fn delete_files_in_directory(dir: &Path, files_deleted: &mut usize, bytes_freed: &mut u64, failed_deletions: &mut Vec<FailedDeletionFile>) {
     if let Ok(entries) = fs::read_dir(dir) {
         for entry in entries.flatten() {
             let path = entry.path();
@@ -32,13 +33,13 @@ fn delete_files_in_directory(dir: &Path, files_deleted: &mut usize, bytes_freed:
                         }
                     },
                     Err(e) => {
-                        failed_deletions.push(format!("{}: {}", path.display(), e));
+                        failed_deletions.push(FailedDeletionFile::new(path.clone(), e.to_string()));
                     }
                 }
             } else if path.is_dir() {
                 delete_files_in_directory(&path, files_deleted, bytes_freed, failed_deletions);
                 if let Err(e) = fs::remove_dir(&path) {
-                    failed_deletions.push(format!("{}: {}", path.display(), e));
+                    failed_deletions.push(FailedDeletionFile::new(path.clone(), e.to_string()));
                 }
             }
         }
