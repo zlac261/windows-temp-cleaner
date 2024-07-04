@@ -23,8 +23,14 @@ impl TempFileCleanerApp {
 
 impl eframe::App for TempFileCleanerApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let _frame = egui::containers::Frame::none()
+            .fill(egui::Color32::from_rgb(240, 240, 240))
+            .inner_margin(20.0)
+            .rounding(10.0);
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Windows Temp Cleaner");
+            ui.add_space(20.0);
 
             if ui.button("Clear Temp Files").clicked() {
                 let result = file_operations::clear_temp_files();
