@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use eframe::egui;
 
+///
+/// Struct responsible for displaying the files that the system failed to delete.
 pub struct LogDisplay {
     messages: Vec<String>,
     failed_deletions: Vec<FailedDeletionFile>,
@@ -39,7 +41,6 @@ impl LogDisplay {
     }
 
 
-
     pub fn clear(&mut self) {
         self.messages.clear();
         self.failed_deletions.clear();
@@ -48,7 +49,8 @@ impl LogDisplay {
 
 
 
-
+///
+/// Struct that holds the information about each file that failed to be deleted.
 pub struct FailedDeletionFile {
     pub path: PathBuf,
     pub error_message: String,

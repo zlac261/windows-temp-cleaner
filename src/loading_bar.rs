@@ -1,6 +1,8 @@
 use eframe::egui::{self, Color32, Rect, Sense, Vec2};
 
 
+///
+/// Struct showing the progress of the file deletion.
 pub struct LoadingBar {
     progress: f32,
 }
