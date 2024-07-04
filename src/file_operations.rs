@@ -7,7 +7,6 @@ pub fn clear_temp_files() -> (usize, u64, Vec<String>) {
     let mut bytes_freed = 0;
     let mut failed_deletions = Vec::new();
 
-
     let temp_dirs = vec![
         env::temp_dir(),
         Path::new("C:\\Windows\\Temp").to_path_buf(),

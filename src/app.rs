@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::{CreationContext, egui};
 use crate::file_operations;
 
 pub struct TempFileCleanerApp {
@@ -10,7 +10,7 @@ pub struct TempFileCleanerApp {
 }
 
 impl TempFileCleanerApp {
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(_cc: &CreationContext) -> Self {
         Self {
             files_deleted: 0,
             bytes_freed: 0,
@@ -32,11 +32,13 @@ impl eframe::App for TempFileCleanerApp {
                 self.bytes_freed = result.1;
                 self.failed_deletions = result.2;
 
-                if self.failed_deletions.is_empty() {
-                    self.operation_result = Some("Temp files cleared successfully!".to_string());
-                } else {
-                    self.operation_result = Some("Some files could not be deleted.".to_string());
-                }
+                self.operation_result = Some(
+                    if self.failed_deletions.is_empty() {
+                        "Temp files cleared successfully!".to_string()
+                    } else {
+                        "Some files could not be deleted.".to_string()
+                    }
+                );
             }
 
             if let Some(result) = &self.operation_result {
@@ -51,7 +53,7 @@ impl eframe::App for TempFileCleanerApp {
             });
             ui.horizontal(|ui| {
                 ui.label("Bytes Freed:");
-                ui.label(format!("Bytes freed: {} MB", self.bytes_freed / 1_000_000));
+                ui.label(format!("{:.2} MB", self.bytes_freed as f64 / 1_000_000.0));
             });
 
             ui.add_space(10.0);
@@ -60,7 +62,7 @@ impl eframe::App for TempFileCleanerApp {
 
             ui.checkbox(&mut self.show_failed_deletions, "Show failed deletions");
 
-            if self.show_failed_deletions {
+            if self.show_failed_deletions && !self.failed_deletions.is_empty() {
                 egui::ScrollArea::vertical().max_height(200.0).show(ui, |ui| {
                     for failed in &self.failed_deletions {
                         ui.label(failed);

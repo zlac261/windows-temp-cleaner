@@ -1,35 +1,49 @@
 mod app;
 mod file_operations;
 
+use std::error::Error;
 use std::fs;
 use std::path::Path;
+use eframe::{self, egui, NativeOptions, App, CreationContext};
 
-fn is_admin() -> bool {
-    let test_path = Path::new("C:\\Windows\\Temp\\test_admin_access.txt");
-    match fs::write(test_path, b"test") {
-        Ok(_) => {
-            let _ = fs::remove_file(test_path);
-            true
-        }
-        Err(_) => false,
+struct AdminPrompt;
+
+impl eframe::App for AdminPrompt {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Administrator Required");
+            ui.label("Run as administrator.");
+            if ui.button("Exit").clicked() {
+                std::process::exit(0);
+            }
+        });
     }
 }
 
-fn main() -> Result<(), eframe::Error> {
-    if !is_admin() {
-        println!("This application requires admin privileges");
-        println!("Please run again as admin");
-        std::process::exit(1);
-    }
+fn is_admin() -> bool {
+    let test_path = Path::new("C:\\Windows\\Temp\\test_admin_access.txt");
+    fs::write(test_path, b"test").and_then(|_| fs::remove_file(test_path)).is_ok()
+}
 
+fn main() -> eframe::Result<()> {
+    let options = if !is_admin() {
+        NativeOptions {
+            viewport: egui::ViewportBuilder::default().with_inner_size([300.0, 100.0]),
+            ..Default::default()
+        }
+    } else {
+        NativeOptions::default()
+    };
 
-    let options = eframe::NativeOptions::default();
     eframe::run_native(
-        "Windows Temp Cleaner",
+        if is_admin() { "Windows Temp Cleaner" } else { "Administrator Required" },
         options,
-        Box::new(move |cc| -> Result<Box<dyn eframe::App>, Box<dyn std::error::Error + Send + Sync>> {
-            let app = app::TempFileCleanerApp::new(cc);
-            Ok(Box::new(app))
+        Box::new(|cc: &CreationContext| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
+            if is_admin() {
+                Ok(Box::new(app::TempFileCleanerApp::new(cc)))
+            } else {
+                Ok(Box::new(AdminPrompt))
+            }
         }),
     )
 }

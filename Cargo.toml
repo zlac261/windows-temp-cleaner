@@ -16,3 +16,8 @@ winres = "0.1"
 [package.metadata.winres]
 OriginalFilename = "windows-temp-cleaner.exe"
 LegalCopyright = "Copright © 2024"
+ProductName = "Windows Temp Cleaner"
+
+[[bin]]
+name = "windows-temp-cleaner"
+path = "src/main.rs"
