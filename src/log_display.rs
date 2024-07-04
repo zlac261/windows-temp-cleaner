@@ -6,21 +6,17 @@ use crate::file_type::FileType;
 ///
 /// Struct responsible for displaying the files that the system failed to delete.
 pub struct LogDisplay {
-    messages: Vec<String>,
     failed_deletions: Vec<FailedDeletionFile>,
 }
 
 impl LogDisplay {
     pub fn new() -> Self {
         Self {
-            messages : Vec::new(),
             failed_deletions: Vec::new(),
         }
     }
 
-    pub fn log(&mut self, message: &String) {
-        self.messages.push(message.to_string());
-    }
+
 
     pub fn log_failed_deletion(&mut self, path: PathBuf, error_message: String) {
         let file_type = if path.is_dir() {
@@ -60,7 +56,6 @@ impl LogDisplay {
 
 
     pub fn clear(&mut self) {
-        self.messages.clear();
         self.failed_deletions.clear();
     }
 }

@@ -25,11 +25,6 @@ impl TempFileCleanerApp {
             is_cleaning: false,
         }
     }
-
-    pub fn log(&mut self, message: &String) {
-        self.log_display.log(message);
-    }
-
 }
 
 impl eframe::App for TempFileCleanerApp {
@@ -72,8 +67,8 @@ impl eframe::App for TempFileCleanerApp {
                         "Some files could not be deleted.".to_string()
                     });
 
-                    let message = format!("Operation result: {:?}", self.operation_result);
-                    self.log(&message);
+                    //let message = format!("Operation result: {:?}", self.operation_result);
+                    //self.log(&message);
                     for failure in &failed_files {
                         self.log_display.log_failed_deletion(failure.path.clone(), failure.error_message.clone());
                     }
