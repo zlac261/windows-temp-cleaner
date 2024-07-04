@@ -1,6 +1,6 @@
 # Windows Temp Cleaner
 
-A simple application to clean temporary files on Windows.
+A simple application to clean temporary files on Windows, built with RUST.
 
 ## Features
 - Cleans user and system temp directories
