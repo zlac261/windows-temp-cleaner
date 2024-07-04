@@ -1,12 +1,13 @@
 use eframe::egui;
 use crate::file_operations;
 use crate::loading_bar::LoadingBar;
+use crate::log_display::LogDisplay;
 
 pub struct TempFileCleanerApp {
     loading_bar: LoadingBar,
+    log_display: LogDisplay,
     files_deleted: usize,
     bytes_freed: u64,
-    failed_deletions: Vec<String>,
     show_failed_deletions: bool,
     operation_result: Option<String>,
     is_cleaning: bool,
@@ -18,12 +19,17 @@ impl TempFileCleanerApp {
             loading_bar: LoadingBar::new(),
             files_deleted: 0,
             bytes_freed: 0,
-            failed_deletions: Vec::new(),
+            log_display: LogDisplay::new(),
             show_failed_deletions: false,
             operation_result: None,
             is_cleaning: false,
         }
     }
+
+    pub fn log(&mut self, message: &String) {
+        self.log_display.log(message);
+    }
+
 }
 
 impl eframe::App for TempFileCleanerApp {
@@ -50,6 +56,7 @@ impl eframe::App for TempFileCleanerApp {
                 ).clicked() {
                     self.is_cleaning = true;
                     self.loading_bar.set_progress(0.0);
+                    self.log_display.clear();
                 }
             } else {
                 self.loading_bar.increment_progress(0.01);
@@ -58,12 +65,18 @@ impl eframe::App for TempFileCleanerApp {
                     let result = file_operations::clear_temp_files();
                     self.files_deleted = result.0;
                     self.bytes_freed = result.1;
-                    self.failed_deletions = result.2;
-                    self.operation_result = Some(if self.failed_deletions.is_empty() {
+                    let failed_files = result.2;
+                    self.operation_result = Some(if failed_files.is_empty() {
                         "Temp files cleared successfully!".to_string()
                     } else {
                         "Some files could not be deleted.".to_string()
                     });
+
+                    let message = format!("Operation result: {:?}", self.operation_result);
+                    self.log(&message);
+                    for failure in &failed_files {
+                        self.log_display.log_failed_deletion(failure.path.clone(), failure.error_message.clone());
+                    }
                 }
 
                 self.loading_bar.show(ui);
@@ -98,9 +111,7 @@ impl eframe::App for TempFileCleanerApp {
 
             if self.show_failed_deletions {
                 egui::ScrollArea::vertical().max_height(200.0).show(ui, |ui| {
-                    for failed in &self.failed_deletions {
-                        ui.label(egui::RichText::new(failed).color(egui::Color32::LIGHT_RED));
-                    }
+                    self.log_display.show(ui);
                 });
             }
         });
