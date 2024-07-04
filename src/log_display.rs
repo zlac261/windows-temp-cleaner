@@ -100,11 +100,18 @@ impl FailedDeletionFile {
 
 
 fn determine_file_type (path: &Path) -> FileType {
-    return if path.is_dir() {
-        FileType::Directory
-    } else {
-        FileType::File
+    if path.is_symlink(){
+        return FileType::Symlink;
+    } else if path.is_dir(){
+        return FileType::Directory;
+    } else if let Ok(metadata) = path.metadata() {
+        if metadata.is_file(){
+            if metadata.permissions().readonly() {
+                return FileType::ReadOnlyFile;
+            }
+        }
     }
+    return FileType::File;
 }
 
 fn get_file_size(path: &Path) -> u64 {
