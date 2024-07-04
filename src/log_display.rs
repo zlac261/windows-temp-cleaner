@@ -1,5 +1,7 @@
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use eframe::egui;
+use crate::file_type::FileType;
 
 ///
 /// Struct responsible for displaying the files that the system failed to delete.
@@ -83,20 +85,32 @@ impl FailedDeletionFile {
             size
         }
     }
-}
 
-
-
-pub enum FileType {
-    File,
-    Directory,
-}
-
-impl FileType {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            FileType::File => "File",
-            FileType::Directory => "Directory",
+    pub fn from_path(path: PathBuf, error_message: String) -> Self {
+        let file_type = determine_file_type(&path);
+        let size = get_file_size(&path);
+        Self {
+            path,
+            error_message,
+            file_type,
+            size
         }
+    }
+}
+
+
+fn determine_file_type (path: &Path) -> FileType {
+    return if path.is_dir() {
+        FileType::Directory
+    } else {
+        FileType::File
+    }
+}
+
+fn get_file_size(path: &Path) -> u64 {
+    if let Ok(metadata) = fs::metadata(path) {
+        metadata.len()
+    } else {
+        0
     }
 }

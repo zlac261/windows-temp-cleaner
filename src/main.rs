@@ -4,6 +4,7 @@ mod app;
 mod file_operations;
 mod loading_bar;
 mod log_display;
+mod file_type;
 
 use std::fs;
 use std::path::Path;
