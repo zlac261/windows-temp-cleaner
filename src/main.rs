@@ -2,6 +2,7 @@
 
 mod app;
 mod file_operations;
+mod loading_bar;
 
 use std::fs;
 use std::path::Path;

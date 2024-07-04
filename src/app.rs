@@ -1,26 +1,27 @@
 use eframe::egui;
 use crate::file_operations;
+use crate::loading_bar::LoadingBar;
 
 pub struct TempFileCleanerApp {
+    loading_bar: LoadingBar,
     files_deleted: usize,
     bytes_freed: u64,
     failed_deletions: Vec<String>,
     show_failed_deletions: bool,
     operation_result: Option<String>,
     is_cleaning: bool,
-    progress: f32,
 }
 
 impl TempFileCleanerApp {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self {
+            loading_bar: LoadingBar::new(),
             files_deleted: 0,
             bytes_freed: 0,
             failed_deletions: Vec::new(),
             show_failed_deletions: false,
             operation_result: None,
             is_cleaning: false,
-            progress: 0.0,
         }
     }
 }
@@ -48,11 +49,11 @@ impl eframe::App for TempFileCleanerApp {
                         .fill(egui::Color32::from_rgb(100, 200, 100)),
                 ).clicked() {
                     self.is_cleaning = true;
-                    self.progress = 0.0;
+                    self.loading_bar.set_progress(0.0);
                 }
             } else {
-                self.progress += 0.01;
-                if self.progress >= 1.0 {
+                self.loading_bar.increment_progress(0.01);
+                if self.loading_bar.is_complete() {
                     self.is_cleaning = false;
                     let result = file_operations::clear_temp_files();
                     self.files_deleted = result.0;
@@ -65,29 +66,7 @@ impl eframe::App for TempFileCleanerApp {
                     });
                 }
 
-                let desired_size = egui::vec2(ui.available_width(), 20.0);
-                let (rect, _) = ui.allocate_exact_size(desired_size, egui::Sense::hover());
-                let visuals = ui.style().visuals.clone();
-                let bar_color = egui::Color32::from_rgb(100, 200, 100);
-                let bg_color = visuals.extreme_bg_color;
-                let percentage = (self.progress * 100.0) as i32;
-
-                ui.painter().rect_filled(rect, 0.0, bg_color);
-                ui.painter().rect_filled(
-                    egui::Rect::from_min_size(rect.min, egui::vec2(rect.width() * self.progress, rect.height())),
-                    0.0,
-                    bar_color,
-                );
-
-                let text = format!("{}%", percentage);
-                let text_color = egui::Color32::BLACK;
-                ui.painter().text(
-                    rect.center(),
-                    egui::Align2::CENTER_CENTER,
-                    text,
-                    egui::FontId::proportional(14.0),
-                    text_color,
-                );
+                self.loading_bar.show(ui);
             }
 
             ui.add_space(20.0);
