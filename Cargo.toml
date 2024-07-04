@@ -11,6 +11,7 @@ repository = "https://github.com/zlac261/windows-temp-cleaner"
 
 [dependencies]
 eframe = "0.28.0"
+image = "0.25.1"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"
