@@ -1,7 +1,8 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod app;
 mod file_operations;
 
-use std::error::Error;
 use std::fs;
 use std::path::Path;
 use eframe::{self, egui, NativeOptions, App, CreationContext};
@@ -35,15 +36,17 @@ fn main() -> eframe::Result<()> {
         NativeOptions::default()
     };
 
+    let app_creator = move |cc: &CreationContext| -> Result<Box<dyn App>, Box<dyn std::error::Error + Send + Sync>> {
+        if is_admin() {
+            Ok(Box::new(app::TempFileCleanerApp::new(cc)))
+        } else {
+            Ok(Box::new(AdminPrompt))
+        }
+    };
+
     eframe::run_native(
         if is_admin() { "Windows Temp Cleaner" } else { "Administrator Required" },
         options,
-        Box::new(|cc: &CreationContext| -> Result<Box<dyn App>, Box<dyn Error + Send + Sync>> {
-            if is_admin() {
-                Ok(Box::new(app::TempFileCleanerApp::new(cc)))
-            } else {
-                Ok(Box::new(AdminPrompt))
-            }
-        }),
+        Box::new(app_creator),
     )
 }

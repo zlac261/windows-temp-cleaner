@@ -1,22 +1,33 @@
 [package]
 name = "windows-temp-cleaner"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-authors = ["Jonathan Al-Hachache <zlac261@live.rhul.ac.uk>",
+authors = [
+    "Jonathan Al-Hachache <zlac261@live.rhul.ac.uk>",
     "Omar Abou Hussein <omar.alaa12330@gmail.com>"
 ]
-description = "A very simple app that cleans all temp files on Windows"
+description = "A simple application that cleans temporary files on Windows"
+repository = "https://github.com/zlac261/windows-temp-cleaner"
 
 [dependencies]
 eframe = "0.28.0"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"
+winapi = { version = "0.3", features = ["winuser"] }
 
 [package.metadata.winres]
 OriginalFilename = "windows-temp-cleaner.exe"
-LegalCopyright = "Copright © 2024"
+LegalCopyright = "Copyright © 2024"
 ProductName = "Windows Temp Cleaner"
+FileDescription = "Windows Temporary File Cleaner"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
 
 [[bin]]
 name = "windows-temp-cleaner"
