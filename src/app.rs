@@ -11,6 +11,9 @@ pub struct TempFileCleanerApp {
     progress: f32,
     info_icon: egui::TextureHandle,
     warning_icon: egui::TextureHandle,
+    is_scanning: bool,
+    scan_progress: f32,
+    scan_result: Option<(usize, u64)>,
 }
 
 impl TempFileCleanerApp {
@@ -27,6 +30,9 @@ impl TempFileCleanerApp {
             progress: 0.0,
             info_icon: load_texture_from_bytes(ctx, include_bytes!("../assets/info.png"), "info", icon_size),
             warning_icon: load_texture_from_bytes(ctx, include_bytes!("../assets/warning.png"), "warning", icon_size),
+            is_scanning: false,
+            scan_progress: 0.0,
+            scan_result: None,
         }
     }
 }
@@ -55,7 +61,7 @@ impl eframe::App for TempFileCleanerApp {
 
         egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
             ui.heading(egui::RichText::new("Windows Temp Cleaner")
-                .size(24.0)
+                .size(28.0)
                 .color(egui::Color32::from_rgb(200, 200, 255)));
             ui.add_space(20.0);
 
@@ -64,17 +70,31 @@ impl eframe::App for TempFileCleanerApp {
                     if ui.add_sized(
                         [180.0, 40.0],
                         egui::Button::new(
+                            egui::RichText::new("Scan Temp Files")
+                                .color(egui::Color32::BLACK)
+                        )
+                            .fill(egui::Color32::from_rgb(100, 200, 100))
+                    )
+                        .on_hover_text("Analyse temp files without deleting them")
+                        .clicked() {
+
+                    }
+
+                    if ui.add_sized(
+                        [180.0, 40.0],
+                        egui::Button::new(
                             egui::RichText::new("Clear Temp Files")
                                 .color(egui::Color32::BLACK)
                         )
                             .fill(egui::Color32::from_rgb(100, 200, 100))
-                    ).clicked() {
+                    )
+                        .on_hover_text("Finds and removes temp files")
+                        .clicked() {
                         self.is_cleaning = true;
                         self.progress = 0.0;
                     }
                 });
             } else {
-                // Simulating progress
                 self.progress += 0.01;
                 if self.progress >= 1.0 {
                     self.is_cleaning = false;
@@ -88,8 +108,6 @@ impl eframe::App for TempFileCleanerApp {
                         "Some files could not be deleted.".to_string()
                     });
                 }
-
-                // Custom progress bar with centered percentage
                 let desired_size = egui::vec2(ui.available_width(), 20.0);
                 let (rect, _) = ui.allocate_exact_size(desired_size, egui::Sense::hover());
 
