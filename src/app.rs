@@ -67,8 +67,6 @@ impl eframe::App for TempFileCleanerApp {
                         "Some files could not be deleted.".to_string()
                     });
 
-                    //let message = format!("Operation result: {:?}", self.operation_result);
-                    //self.log(&message);
                     for failure in &failed_files {
                         self.log_display.log_failed_deletion(failure.path.clone(), failure.error_message.clone());
                     }

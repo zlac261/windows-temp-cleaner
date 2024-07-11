@@ -16,22 +16,8 @@ impl LogDisplay {
         }
     }
 
-
-
     pub fn log_failed_deletion(&mut self, path: PathBuf, error_message: String) {
-        let file_type = if path.is_dir() {
-            FileType::Directory
-        } else{
-            FileType::File
-        };
-
-        let size = match path.metadata() {
-            Ok(metadata) => metadata.len(),
-            Err(_) => 0,
-        };
-
-
-        self.failed_deletions.push(FailedDeletionFile::new(path, error_message, file_type, size));
+        self.failed_deletions.push(FailedDeletionFile::from_path(path, error_message));
     }
 
 
@@ -84,12 +70,7 @@ impl FailedDeletionFile {
     pub fn from_path(path: PathBuf, error_message: String) -> Self {
         let file_type = determine_file_type(&path);
         let size = get_file_size(&path);
-        Self {
-            path,
-            error_message,
-            file_type,
-            size
-        }
+        return FailedDeletionFile::new(path,error_message, file_type, size);
     }
 }
 
