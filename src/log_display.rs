@@ -3,16 +3,28 @@ use std::path::{Path, PathBuf};
 use eframe::egui;
 use crate::file_type::FileType;
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum SortCriteria {
+    FileName,
+    ErrorMessage,
+    FileType,
+    Size,
+}
+
 ///
 /// Struct responsible for displaying the files that the system failed to delete.
 pub struct LogDisplay {
     failed_deletions: Vec<FailedDeletionFile>,
+    sort_by: SortCriteria,
+    ascending: bool,
 }
 
 impl LogDisplay {
     pub fn new() -> Self {
         Self {
             failed_deletions: Vec::new(),
+            sort_by: SortCriteria::FileName,
+            ascending: true,
         }
     }
 
@@ -20,26 +32,56 @@ impl LogDisplay {
         self.failed_deletions.push(FailedDeletionFile::from_path(path, error_message));
     }
 
+    pub fn show(&mut self, ui: &mut egui::Ui) {
+        self.sort_failed_deletions();
 
-    pub fn show(&self, ui: &mut egui::Ui) {
         egui::Grid::new("failed_deletion_grid")
             .striped(true)
             .show(ui, |ui| {
-                ui.label("File Name");
-                ui.label("Error Message");
-                ui.label("Type");
-                ui.label("Size");
+                self.sortable_header(ui, "File Name", SortCriteria::FileName);
+                self.sortable_header(ui, "Error Message", SortCriteria::ErrorMessage);
+                self.sortable_header(ui, "Type", SortCriteria::FileType);
+                self.sortable_header(ui, "Size", SortCriteria::Size);
+                ui.end_row();
 
                 for failed_file in &self.failed_deletions {
-                    ui.end_row();
                     ui.label(failed_file.path.file_name().unwrap_or_default().to_string_lossy());
                     ui.label(&failed_file.error_message);
                     ui.label(failed_file.file_type.as_str());
                     ui.label(format!("{:.2} MB",failed_file.size as f64 / 1_000_000.0));
+                    ui.end_row();
                 }
             });
     }
 
+    fn sortable_header(&mut self, ui: &mut egui::Ui, label: &str, criteria: SortCriteria) {
+        let text = if self.sort_by == criteria {
+            format!("{} {}", label, if self.ascending { "(Asc)" } else { "(Desc)" })
+        } else {
+            label.to_string()
+        };
+
+        if ui.link(text).clicked() {
+            if self.sort_by == criteria {
+                self.ascending = !self.ascending;
+            } else {
+                self.sort_by = criteria;
+                self.ascending = true;
+            }
+        }
+    }
+
+    fn sort_failed_deletions(&mut self) {
+        self.failed_deletions.sort_by(|a, b| {
+            let cmp = match self.sort_by {
+                SortCriteria::FileName => a.path.file_name().cmp(&b.path.file_name()),
+                SortCriteria::ErrorMessage => a.error_message.cmp(&b.error_message),
+                SortCriteria::FileType => a.file_type.as_str().cmp(b.file_type.as_str()),
+                SortCriteria::Size => a.size.cmp(&b.size),
+            };
+            if self.ascending { cmp } else { cmp.reverse() }
+        });
+    }
 
     pub fn clear(&mut self) {
         self.failed_deletions.clear();
